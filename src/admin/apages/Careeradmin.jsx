@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import Footer from '../../Components/Footer'
 import Adminheader from '../../admin/acomponents/Adminheader'
 import Adminsidebar from '../acomponents/Adminsidebar'
@@ -7,11 +7,17 @@ import { faArrowUpRightFromSquare, faTrash, faXmark } from '@fortawesome/free-so
 import { faLocationDot } from '@fortawesome/free-solid-svg-icons/faLocationDot'
 import { Link } from 'react-router-dom'
 import Addjob from '../acomponents/Addjob'
-import { deleteAJobApi, seeAllJobsApi } from '../../Services/allApis'
+import { deleteAJobApi, getAllUserApplicationsAPI, seeAllJobsApi } from '../../Services/allApis'
 import { useEffect } from 'react'
+import { JobContext } from '../../../Context/ContextShare'
+import SERVERURL from '../../Services/ServerURL'
+
+
 
 
 const Careeradmin = () => {
+  //data shared from AddJob component to careeradamin page
+  const {addJobResponse,setAddJobResponse}= useContext(JobContext)
   //job list
   const[jobListStatus,setJobListStatus]=useState(true)
   //application : admin to see applications submitted by users
@@ -22,15 +28,42 @@ const Careeradmin = () => {
   const[searchKey,setSearchKey]=useState("")
   //whenever admin deletes a job, the rest of the jobs must be seen, so useeffect must render again for that the below state
   const[deleteAJobResponse,setDeleteAJobresponse]=useState({})
+  //users might have applied to different job openings and admin must seee who all have appplied for different job opeings, so this state holds appliactions of users.
+  const[applicationList,setApplicationList]=useState([])
+
+  console.log(applicationList);
+  
 
   //useeffect to see all jobs based on search also
   useEffect(()=>{
     if(jobListStatus==true){
       getAllJobsForAdmin()
+    }else if(listApplicationStatus==true){
+      getAllApplicationsOfUsers()
     }
-  },[searchKey,deleteAJobResponse])
+  },[searchKey,deleteAJobResponse,addJobResponse,listApplicationStatus])
 
-  console.log(allJobs);
+ //get all applications of job applied users for ADMIN
+  const getAllApplicationsOfUsers=async()=>{
+    const token = sessionStorage.getItem("token")
+    if(token){
+      const reqHearder={
+        "Authorization":`Bearer ${token}`
+      }
+      //api call is made only if token is there
+      const result = await getAllUserApplicationsAPI(reqHearder)
+      if(result.status == 200){
+        setApplicationList(result.data)
+      }else{
+        console.log(result);
+        
+      }
+    }
+    
+  }
+
+
+
   
 
 
@@ -89,7 +122,7 @@ const Careeradmin = () => {
                                {/*two tabs */}
                                 <div className="flex justify-center items-center my-5 font-medium text-lg ">
                                   <p onClick={()=>{setJobListStatus(true); setListApplicationStatus(false); }} className={jobListStatus ? 'text-blue-500 p-4 border-1 border-gray-200 border-t border-1 border-r rounded cursor-pointer':'p-4 border-b border-gray-400 cursor-pointer'} > Job Post</p>
-                                  <p onClick={()=>{setListApplicationStatus(true); setJobListStatus(false)}} className={listApplicationStatus ? 'text-blue-500 p-4 border-1 border-gray-200 border-t border-1 border-r rounded cursor-pointer':'p-4 border-b border-gray-400 cursor-pointer'}> Applications</p>
+                                  <p onClick={()=>{setListApplicationStatus(true); setJobListStatus(false)}} className={listApplicationStatus ? 'text-blue-500 p-4 border-1 border-gray-200 border-t border-1 border-r rounded cursor-pointer':'p-4 border-b border-gray-400 cursor-pointer'}> View Applications</p>
                                   
                                  </div>
                     {/*Contents */}
@@ -161,19 +194,29 @@ const Careeradmin = () => {
                                 </thead>
   
                                 <tbody>
-                                  <tr>
-                                    <td className="border border-gray-500 p-3 text-center">1</td>
-                                    <td className="border border-gray-500 p-3 text-center">Front End Developer</td>
-                                    <td className="border border-gray-500 p-3 text-center">Max Miller</td>
-                                    <td className="border border-gray-500 p-3 text-center">BCA</td>
-                                    <td className="border border-gray-500 p-3 text-center">max@gmail.com</td>
-                                    <td className="border border-gray-500 p-3 text-center">9034567890</td>
-                                    <td className="border border-gray-500 p-3 text-center">Lorem ipsum dolor sit amet consectetur adipisicing elit. Vitae delectus voluptates nihil sapiente, sed facere officia ea molestiae. Tempore voluptates voluptatem ut velit laborum perspiciatis eaque, neque expedita odit possimus!</td>
+                                  {/* to be repeated according to applicationList data */}
+                                  {
+                                    applicationList?.length>0?
+                                       applicationList?.map((item,index)=>(
+                                        <tr key={item?._id}>
+                                    <td className="border border-gray-500 p-3 text-center">{index+1}</td>
+                                    <td className="border border-gray-500 p-3 text-center">{item?.JobTitle}</td>
+                                    <td className="border border-gray-500 p-3 text-center">{item?.fullname}</td>
+                                    <td className="border border-gray-500 p-3 text-center">{item?.qualification}</td>
+                                    <td className="border border-gray-500 p-3 text-center">{item?.email}</td>
+                                    <td className="border border-gray-500 p-3 text-center">{item?.phone}</td>
+                                    <td className="border border-gray-500 p-3 text-center">{item?.coverletter}</td>
                                     <td className="border border-gray-500 p-3 text-center">
-                                      <Link className='text-blue-600 underline'> resume</Link>
+                                      <Link to={`${SERVERURL}/pdf/${item?.resume}`} className='text-blue-600 underline'target='_blank'> Resume</Link>
                                     </td>
                                     
                                   </tr>
+                                       ))
+                                       :
+                                       <tr><p className="text-center font-bold text-xl">
+                                            No Applications available!!
+                                        </p></tr>
+                                  }
                                 </tbody>
                           </table>
   

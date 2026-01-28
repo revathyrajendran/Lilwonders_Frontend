@@ -22,11 +22,22 @@ export const googleLoginApi=async(reqBody)=>{
 
 //------------------Authorized------------------
     //---------------admin-----------------------------------
+    //add job api BY admin
+    export const addJobByAdminAPI = async(reqBody,reqHeader)=>{
+       return await commonApi("POST",`${SERVERURL}/admin-addjob`,reqBody,reqHeader)
+    }
+
     //delete A Job By Admin Authorized, jobID and reqHeaders is needed.
     export const deleteAJobApi=async(jobID,reqHeader)=>{
       return await commonApi("DELETE",`${SERVERURL}/job/${jobID}/remove`,{},reqHeader)
 
     }
+
+    //users might have applied to various jobs, admin must see who all have applied in applications, called by admin Career component
+    export const getAllUserApplicationsAPI = async(reqHeader)=>{
+      return await commonApi("GET",`${SERVERURL}/all-application/admin`,{},reqHeader)
+    }
+
     //admin to see all users of the application, authorization is required to get admin's mail id , admin is also a user, but admin must not see admin itself. ---To be Completed.
     export const getAllUsersForAdminApi = async(reqHeader)=>{
         return await commonApi("GET",`${SERVERURL}/admin-allusers`,{},reqHeader)
@@ -72,4 +83,9 @@ export const googleLoginApi=async(reqBody)=>{
        export const getAllPurchasedProductsOfAUserApi = async(reqHeader)=>{
         return await commonApi("GET",`${SERVERURL}/user-bought/products`,{},reqHeader)
        }
+       //logged in user to apply for a job, called by career component of users
+    export const userApplyJobApi=async(reqBody,reqHeader)=>{
+      return await commonApi("POST",`${SERVERURL}/user-application/add`,reqBody,reqHeader)
+
+    }
 

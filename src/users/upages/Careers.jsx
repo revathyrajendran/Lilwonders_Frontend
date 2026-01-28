@@ -5,11 +5,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowUpRightFromSquare, faXmark } from '@fortawesome/free-solid-svg-icons'
 import { faLocationDot } from '@fortawesome/free-solid-svg-icons/faLocationDot'
 import { seeAllJobsApi } from '../../Services/allApis'
+import { ToastContainer,toast} from 'react-toastify'
+
 
 
 
 const Careers = () => {
-  //Application Form Status
+ 
+  
+  //Application Form Status for applying to job
   const[modalstatus,setModalStatus]= useState(false)
 
   //To get All Jobs from Users
@@ -19,12 +23,32 @@ const Careers = () => {
   const[searchKey,setSearchKey]=useState("")
 
   console.log(allJobsForUsers);
+
+  //state to hold application details when user applies
+  const[applicationDetails,setApplicationDetails]=useState({
+    fullname:"",email:"", qualification:"",phone:"",coverletter:"",resume:""
+  })
+     //console.log(applicationDetails);
+
+  //state to hold resume file,Date.now() to make it unique
+  const[fileKey,setFileKey]=useState(Date.now())
+  
   
 
   //useffect to fetch data soon as the page is opened
   useEffect(()=>{
     seeAllJobsForUsers()
   },[searchKey])
+
+  //function to reset form
+  const handleReset=()=>{
+      setApplicationDetails({
+        fullname:"",email:"", qualification:"",phone:"",coverletter:"",resume:""
+      })
+      //reseting file
+      setFileKey(Date.now())
+      
+  }
 
 
   //function to see all jobs 
@@ -53,7 +77,11 @@ const Careers = () => {
   
         {/*Current openings and search */}
         <div className="my-5">
-          <h1 className="text-2xl font-bold">Current Openings</h1>
+            
+          <div>
+            <h1 className="text-2xl font-bold text-center text-dark">Current Openings</h1>
+          </div>
+         
            {/*search bar */}
           <div className="flex justify-center items-center my-10">
             <div className="flex my-5">
@@ -109,28 +137,28 @@ const Careers = () => {
                               <div className='relative p-5'>
                                 <div className="md:grid grid-cols-2 gap-x-3">
                                   <div className="mb-3">
-                                    <input type="text" className="border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder=' Full Name' />
+                                    <input value={applicationDetails.fullname} onChange={e=>setApplicationDetails({...applicationDetails,fullname: e.target.value})} type="text" className="border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder=' Full Name' />
                                   </div>
                                 
                                   <div className="mb-3">
-                                    <input type="text" className="border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder='Qualification' />
+                                    <input value={applicationDetails.qualification} onChange={e=>setApplicationDetails({...applicationDetails,qualification:e.target.value})} type="text" className="border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder='Qualification' />
                                   </div>
                                   
                                   <div className="mb-3">
-                                    <input type="text" className="border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder='Email id' />
+                                    <input value={applicationDetails.email} onChange={e=>setApplicationDetails({...applicationDetails,email:e.target.value})} type="text" className="border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder='Email id' />
                                   </div>
                                   
                                   <div className="mb-3">
-                                    <input type="text" className="border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder='Phone ' />
+                                    <input value={applicationDetails.phone} onChange={e=>setApplicationDetails({...applicationDetails,phone:e.target.value})} type="text" className="border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder='Phone ' />
                                   </div>
   
                                   <div className="col-span-2">
-                                    <textarea type="text" className=" mb-5 border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder='Cover Letter ' />
+                                    <textarea value={applicationDetails.coverletter} onChange={e=>setApplicationDetails({...applicationDetails,coverletter:e.target.value})} type="text" className=" mb-5 border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder='Cover Letter ' />
                                   </div>
   
                                    <div className="mb-3 col-span-2 flex flex-col text-gray-500">
                                     <label htmlFor="">Resume</label>
-                                    <input type="file" className='w-full  border rounded file:bg-gray-400 file:p-2'  />
+                                    <input key={fileKey} onChange={e=>setApplicationDetails({...applicationDetails,resume:e.target.files[0]})} type="file" className='w-full  border rounded file:bg-gray-400 file:p-2'  />
                                   </div>
                                   
                                 </div>
@@ -154,6 +182,20 @@ const Careers = () => {
    </div>
     
     <Footer/>
+    {/*Toast for alert*/}
+    <ToastContainer
+    position="top-center"
+    autoClose={5000}
+    hideProgressBar={false}
+    newestOnTop={false}
+    closeOnClick={false}
+    rtl={false}
+    pauseOnFocusLoss
+    draggable
+    pauseOnHover
+    theme="colored"
+    
+    />
     </>
   )
 }
