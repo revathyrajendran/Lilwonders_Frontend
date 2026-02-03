@@ -6,12 +6,23 @@ import { faCamera, faEye } from '@fortawesome/free-regular-svg-icons'
 import { faBackward, faXmark } from '@fortawesome/free-solid-svg-icons'
 import { Link, useParams } from 'react-router-dom'
 import { ToastContainer,toast} from 'react-toastify'
-import { ViewASingleProductForUserShoppingApi } from '../../Services/allApis'
+import { makePaymentByUserApi, userAddAddressApi, ViewASingleProductForUserShoppingApi } from '../../Services/allApis'
 import SERVERURL from '../../Services/ServerURL'
+//buying a product import
+import {loadStripe} from '@stripe/stripe-js';
 
 const ViewAProduct = () => {
   //modal for viewing pictures using eye icon
   const[modalstatus,setModalStatus]= useState(false)
+
+  //modal for users to enter their address while buying a product
+  const[addressModalStatus,setAddressModalStatus]= useState(false)
+
+  //state to hold address details entered by users
+  const[addressDetail,setAddressDetail]=useState({
+          customername:"",buildingname:"",locality:"",pincode:"", phonenumber:"",alternatenumber:"",addresstype:"",productcode:""
+  })
+  
   //To view a single book, we need the id of the particular book : <Route path='product/:id/view' element={<ViewAProduct/>} /> this id value. So destructuring id value . Useparams is used to get dynamic Id.
   const {id} = useParams()
   //state to hold product details - only one product , otherwise array of many objects for multiple books.
@@ -24,6 +35,84 @@ const ViewAProduct = () => {
   useEffect(()=>{
     viewAProduct()
   },[])
+
+
+  //function to reset form
+  const handleReset=()=>{
+      setAddressDetail({
+         customername:"",buildingname:"",locality:"",pincode:"", phonenumber:"",alternatenumber:"",addresstype:""
+      })
+     setAddressModalStatus(false)
+      
+  }
+
+   //payment option, loadStripe is synchronous
+  const handlePayment=async()=>{
+       console.log("Inside handlePayment!");
+       //stripe object , pk_test_ is copied from stripe.com after sign in
+    const stripe = await loadStripe('pk_test_51SvCnM2FRWxWdt4UC5xocClYRIm6mL14l8FaFtgCRXnPSp8YVxtz640bOsu40clG9Wk16XT9kys1hF2toxtJTv1100OpxpzSuk');
+    console.log(stripe);
+    //token
+    const token = sessionStorage.getItem("token")
+    if(token){
+      //defining reqheader
+       const reqHeader = {
+        "Authorization" : `Bearer ${token}`
+       } 
+       //error prone
+       try{
+        //aProductDetail holds the detail of the book user is viewing
+        const result = await makePaymentByUserApi(aProductDetail,reqHeader)
+        console.log(result);
+           //redirectToCheckout is a predefined method in stripe
+        //stripe.redirectToCheckout({
+          //in axios server response is always in result.data
+          //sessionurl:result.data.checkoutSessionURL
+        //})
+        const checkoutSessionURL = result.data.checkoutSessionURL
+        if(checkoutSessionURL){
+          //redirect
+          window.location.href = checkoutSessionURL
+        }
+
+       }catch(err){
+        console.log(err);
+        
+       }
+    }
+  }
+
+
+  //handle place order only after address details are filled.
+  const handlePlaceOrder = async()=>{
+    if(!addressDetail.customername || !addressDetail.buildingname || !addressDetail.locality ||!addressDetail.phonenumber || !addressDetail.alternatenumber || !addressDetail.pincode || !addressDetail.addresstype){
+      toast.warning("Enter All the address Details!!!!!!!!!!")
+    }
+    else{
+      const token = sessionStorage.getItem('token')
+      if(token){
+        //defining reqheader
+       const reqHeader = {
+        "Authorization" : `Bearer ${token}`
+       } 
+       try{
+        const result = await userAddAddressApi(addressDetail,reqHeader)
+        if(result.status==200){
+          toast.success("Address Details submitted successfully")
+          handleReset()
+          //after 2 seconds
+          setTimeout(() => {
+             handlePayment()
+          }, 2000);
+        }
+
+       }catch(err){
+        console.log(err);
+        
+       }
+      }
+    }
+  }
 
 
   //to view a book , this function does not need to use id as an argument because, already we have declared the variable using use params, so can be accessed anywhere in the component.
@@ -91,10 +180,11 @@ const ViewAProduct = () => {
                   {aProductDetail?.description}
                 </p>
               </div>
-              {/*buttons */}
+              {/*buttons {aProductDetail?.
+discountPrice} */}
               <div className="flex justify-end">
                  <Link to={'/all-products'} className="bg-blue-900 text-white p-2 rounded me-3"><FontAwesomeIcon icon={faBackward}/>Back</Link>
-                  <Link className="bg-green-900 text-white p-2 ms-5 rounded">Buy $ {aProductDetail?.
+                  <Link  onClick={()=>{setAddressDetail({...addressDetail,productcode:aProductDetail?.productcode});setAddressModalStatus(true)}}  className="bg-green-900 text-white p-2 ms-5 rounded">Buy $ {aProductDetail?.
 discountPrice}</Link>
               </div>
 
@@ -103,7 +193,7 @@ discountPrice}</Link>
       </div>
     </div>
 
-      {/*Modal */}
+      {/*Modal to view products */}
       {
         modalstatus &&
         <div className='relative z-10 overflow-y-auto' >
@@ -142,6 +232,83 @@ discountPrice}</Link>
 
                   </div>
                 </div>
+        </div>
+      }
+
+
+      {/*Modal to provide address */}
+      {
+        addressModalStatus &&
+        <div className='relative z-10 overflow-y-auto'>
+          <div className='bg-gray-500/75 fixed inset-0'>
+             <div className='flex justify-center items-center min-h-screen scroll-auto'>
+                 <div className='bg-white rounded-2xl w-150'>
+                   
+                    {/*Modal header */}
+                <div className='bg-black text-white flex justify-between items-center p-3 text-xl'>
+                                <h3>Add Your Address</h3>
+                      <FontAwesomeIcon onClick={()=>setAddressModalStatus(false)} icon={faXmark}/>
+                </div>
+                 {/*Modal body */}
+        
+                              <div className='relative p-5'>
+                                <div className="md:grid grid-cols-2 gap-x-3">
+
+                                  <div className="mb-3">
+                                    {
+                                      aProductDetail?.productcode &&
+                                      <input value={ addressDetail.productcode} type="text" className="border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder='Product Code' />
+                                    }
+                                  </div>
+
+                                  <div className="mb-3">
+                                    <input value={addressDetail.customername} onChange={e=>setAddressDetail({...addressDetail,customername:e.target.value})} type="text" className="border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder=' Full Name' />
+                                  </div>
+                                
+                                  <div className="mb-3">
+                                    <input value={addressDetail.buildingname} onChange={e=>setAddressDetail({...addressDetail,buildingname:e.target.value})}  type="text" className="border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder='Building Name' />
+                                  </div>
+                                  
+                                  <div className="mb-3">
+                                    <input value={addressDetail.locality} onChange={e=>setAddressDetail({...addressDetail,locality:e.target.value})} type="text" className="border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder='Locality' />
+                                  </div>
+                                  
+                                  <div className="mb-3">
+                                    <input value={addressDetail.pincode} onChange={e=>setAddressDetail({...addressDetail,pincode:e.target.value})}  type="text" className="border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder='Pincode' />
+                                  </div>
+  
+                                  <div className="mb-3">
+                                     <input value={addressDetail.phonenumber} onChange={e=>setAddressDetail({...addressDetail,phonenumber:e.target.value})}  type="text" className="border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder='Phone Number ' />
+                                  </div>
+
+                                  <div className="mb-3">
+                                     <input value={addressDetail.alternatenumber} onChange={e=>setAddressDetail({...addressDetail,alternatenumber:e.target.value})}  type="text" className="border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder='Alternate Phone Number ' />
+                                  </div>
+
+                                  <div className="mb-3">
+                                     <input value={addressDetail.addresstype} onChange={e=>setAddressDetail({...addressDetail,addresstype:e.target.value})}  type="text" className="border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder='Address Type ' />
+                                  </div>
+
+
+                                  
+                                  
+                                </div>
+                              </div>
+                               {/*Modal footer */}
+                                
+                                <div className="bg-gray-200 p-3  w-full flex justify-end">
+                                  <button onClick={handleReset} className="bg-gray-700 text-white py-2 px-3 mx-3">Cancel</button>
+  
+                                  <button onClick={handlePlaceOrder} className="bg-blue-600 text-white py-2 px-3 mx-3">Place Holder</button>
+                                     
+                                </div>
+
+                 </div>
+
+             </div>
+
+          </div>
+                
         </div>
       }
 

@@ -61,6 +61,14 @@ export const googleLoginApi=async(reqBody)=>{
       return await commonApi("DELETE",`${SERVERURL}/admin/${productID}/deleteproduct`,{},reqHeader)
 
     }
+    //get all Orders for admin API , called By Orders Admin
+    export const getAllOrdersForAdminApi=async(reqHeader)=>{
+        return await commonApi("GET",`${SERVERURL}/admin-allorders`,{},reqHeader)
+    }
+    //get all returned orders for admin
+    export const getReturnedProductsForAdminApi = async (reqHeader) => {
+      return await commonApi( "GET", `${SERVERURL}/admin-returnedorders`,{},reqHeader)
+      }
     
     //---------users---------------------
        //get all products for logged in user when user clicks shop menu in the header,for logged in
@@ -84,8 +92,27 @@ export const googleLoginApi=async(reqBody)=>{
         return await commonApi("GET",`${SERVERURL}/user-bought/products`,{},reqHeader)
        }
        //logged in user to apply for a job, called by career component of users
-    export const userApplyJobApi=async(reqBody,reqHeader)=>{
-      return await commonApi("POST",`${SERVERURL}/user-application/add`,reqBody,reqHeader)
-
-    }
+        export const userApplyJobApi=async(reqBody,reqHeader)=>{
+        return await commonApi("POST",`${SERVERURL}/user-application/add`,reqBody,reqHeader)
+        }
+        //user giving address before 
+        export const userAddAddressApi=async(reqBody,reqHeader)=>{
+        return await commonApi("POST",`${SERVERURL}/user-address/add`,reqBody,reqHeader)
+        }
+        //purchase product -- user , called by ViewAProduct component when user clicks buy
+        export const makePaymentByUserApi=async(reqBody,reqHeader)=>{
+        return await commonApi("POST",`${SERVERURL}/make-payment`,reqBody,reqHeader)
+        }
+        //Return product -- user , called by ViewAProduct component when user clicks buy
+        export const ReturnProductByUserApi=async(reqBody,reqHeader)=>{
+        return await commonApi("POST",`${SERVERURL}/user-return/product`,reqBody,reqHeader)
+        }
+        //review product -- user , called by paymentSuccess component when user clicks review
+        export const reviewAProductByUserApi=async(reqBody,reqHeader)=>{
+        return await commonApi("POST",`${SERVERURL}/user-review/add`,reqBody,reqHeader)
+        }
+        //Authorization not required here, any user who take the website can see these products
+       export const getAllReviewsInHomePageApi=async()=>{
+        return await commonApi("GET",`${SERVERURL}/user-review/home`)
+       }
 

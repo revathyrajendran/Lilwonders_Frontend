@@ -1,16 +1,22 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { Link, useNavigate } from 'react-router-dom'
 import { faPowerOff } from '@fortawesome/free-solid-svg-icons'
+import { userAuthContext } from '../../../Context/AuthContext'
+
 
 
 const Adminheader = () => {
+  //role and authorized state from context API, used in app.jsx,Auth.jsx  also
+    const{role,authorizedUser,setAuthorizedUser}=useContext(userAuthContext)
   //useNavigate for navigation
   const navigate = useNavigate()
 
   //admin logout function
   const logout=()=>{
+    //context
+    setAuthorizedUser(false)
     sessionStorage.clear()
     navigate('/')
     

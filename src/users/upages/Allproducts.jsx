@@ -11,6 +11,7 @@ import SERVERURL from '../../Services/ServerURL'
 
 
 const Allproducts = () => {
+
   const [liststatus,setListStatus]=useState(false)
   //token state : only logged in users can see the products also .
   const[token,setToken]=useState("")
@@ -24,6 +25,13 @@ const Allproducts = () => {
   //just to see if products are getting
   console.log(allProducts);
 
+  //For pagenation to display only unordered products
+const displayProducts = allProducts.filter(
+  product =>
+    product.status !== 'sold' 
+
+);
+
          //PAGENATION {
   //pagenation states for current page, current page set to first page
     const[currentPage, setCurrentPage] = useState(1)
@@ -34,12 +42,12 @@ const Allproducts = () => {
   //firstproductindex , eg: indexOfLastproduct:8 ,productsPerPage:8 , firstproductindex=0
   const indexOfFirstProduct = indexOfLastproduct - productsPerPage
   //array is sliced. Your productsForAdmin array contains all products fetched from the database.But for pagination, we only want to display 8 products per page, not all at once.slice() helps us cut out a small portion of the array without changing the original array.Full array → remains unchanged . currentProducts → contains only products for the current page . array.slice(startIndex, endIndex).startIndex → position where extraction starts (included).endIndex → position where extraction ends (excluded)
-  const currentProducts = allProducts.slice(
-    indexOfFirstProduct,
-    indexOfLastproduct
-  )
+  const currentProducts = displayProducts.slice(
+  indexOfFirstProduct,
+  indexOfLastproduct
+);
   //Calculating Total Products, If admin adds more products,React automatically recalculates total pages.No manual change needed.
-  const totalPages = Math.ceil(allProducts.length / productsPerPage)
+  const totalPages = Math.ceil(displayProducts.length / productsPerPage)
          //     }
 
 //State to store products temporarily for filtering
@@ -47,6 +55,8 @@ const[tempProducts, setTempProducts]=useState([])
 
 //array to keep categories for filtering : because writing code for all categories is a difficut task here
 const[allAgesBasedFiltering,setAllAgesBasedFiltering]=useState([])
+
+
 
   //useeffect to get user Token
   useEffect(()=>{
@@ -185,7 +195,7 @@ const goToNextPage = () =>{
                 {
                   currentProducts?.length>0?
                      currentProducts?.map(product=>(
-                      <div key={product?._id}  className="shadow p-3 rounded mx-2">
+                      <div key={product?._id} className="shadow p-3 rounded mx-2">
                     <img width={'100%'} height={'300px'} src={product?.uploadImg?.length>0? `${SERVERURL}/uploads/${product?.uploadImg[0]}`
 :"https://5.imimg.com/data5/SELLER/Default/2023/4/301623268/MD/GE/QU/41032088/screenshot-20221123-201106-patpat-500x500.png"} alt="" />
                     <div className="flex flex-col justify-center align-center">

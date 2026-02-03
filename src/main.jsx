@@ -6,6 +6,8 @@ import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import ContextShare from '../Context/ContextShare.jsx'
+import AuthContext from '../Context/AuthContext.jsx'
+
 
 
 createRoot(document.getElementById('root')).render(
@@ -13,7 +15,9 @@ createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <GoogleOAuthProvider clientId='310902388824-iebtvn8ajtm1ieq5fijadp053peu25ip.apps.googleusercontent.com'>
         <ContextShare>
-          <App />
+          <AuthContext>
+            <App />
+          </AuthContext>
         </ContextShare>
       </GoogleOAuthProvider>
     </BrowserRouter>

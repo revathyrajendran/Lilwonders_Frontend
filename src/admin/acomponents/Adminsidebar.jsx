@@ -44,9 +44,13 @@ const Adminsidebar = () => {
   
             <div className="mt-3">
               <Link to={'/admin-resource'}> <FontAwesomeIcon icon={faBook} className='me-2' />Resources</Link>
-              
-              
             </div>
+
+             <div className="mt-3">
+              <Link to={'/admin-orders'}> <FontAwesomeIcon icon={faBook} className='me-2' />Orders</Link>
+            </div>
+
+             
              <div className="mt-3">
                <Link to={'/admin-career'}> <FontAwesomeIcon icon={faGraduationCap} className='me-2' />Careers</Link>
               

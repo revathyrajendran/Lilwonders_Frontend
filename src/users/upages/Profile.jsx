@@ -1,16 +1,24 @@
 import React, { useContext, useEffect, useState } from 'react'
 import Header from '../ucomponents/Header'
 import Footer from '../../Components/Footer'
+import { ToastContainer,toast} from 'react-toastify'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircleCheck } from '@fortawesome/free-solid-svg-icons'
 import SERVERURL from '../../Services/ServerURL'
 import Edituserprofile from '../ucomponents/Edituserprofile'
 import { userProfileDetailsUpdateContext } from '../../../Context/ContextShare'
-import { getAllPurchasedProductsOfAUserApi } from '../../Services/allApis'
+
+
+import { useNavigate } from 'react-router-dom'
+import { getAllPurchasedProductsOfAUserApi, ReturnProductByUserApi } from '../../Services/allApis'
 
 
 const Profile = () => {
   //styles for three status
+  //navigation
+  const navigate = useNavigate()
+
+  
 
   //Token of the user
   const[token,setToken]=useState("")
@@ -69,6 +77,33 @@ const[purchasedProductList,setPurchasedProductList]=useState([])
       
     }
   }
+
+  
+
+  //function to return a product,product here is just a parameter
+  const ReturnAproduct=async(product)=>{
+          if(token){
+          const reqHeader={
+            "Authorization" : `Bearer ${token}`
+            }
+            const reqBody={
+          _id:product._id,name:product.name,productcode:product.productcode,brand:product.brand,ageGroup:product.ageGroup,color:product.color,price:product.price,discountPrice:product.discountPrice,description:product.description,occasion:product.occasion,idealFor:product.idealFor,fabrictype:product.fabrictype,fabricCare:product.fabricCare,uploadImg:product.uploadImg
+        }
+        try{
+          const result =  await ReturnProductByUserApi(reqBody,reqHeader)
+          if(result.status==200){
+            setTimeout(() => {
+              navigate('/return-order')
+            }, 1500);
+          getAllPurchasedProductsOfAUser()
+          }
+        }catch(err){
+          console.log(err);
+          
+        }
+        }
+   }
+
   
   
 
@@ -115,8 +150,14 @@ Browse adorable outfits, special deals, and new arrivals curated with love for y
           {/* purchasestatus of a user */}
           {
             purchasedProductList?.length>0?
-               purchasedProductList?.map((purchasedProduct,index)=>
-               ( <div key={index} className="p-10 my-20 shadow">
+               purchasedProductList?.map((purchasedProduct,index)=>{
+                
+
+                 const RetButton =
+                 purchasedProduct.status === 'sold' 
+                
+                
+            return  ( <div key={index} className="p-10 my-20 shadow">
                {/* Products to be duplicated */}
                <div className="p-5 rounded mt-5 bg-gray-100">
                   <div className="md:grid grid-cols-[3fr_1fr]">
@@ -128,13 +169,20 @@ Browse adorable outfits, special deals, and new arrivals curated with love for y
                        <h3 className="text-lg text-blue-400">$ {purchasedProduct?.discountPrice}</h3>
                        
 
-                       {/*Product status :  unordered by default, order confirmed, shipped ,delivered, canceled  */ }
+                       {/*Product status :  sold  */ }
                        <div className="flex">
                           
-                          <img className='mt-5' width={'200px'} height={'200px '} src="https://png.pngtree.com/png-vector/20220201/ourmid/pngtree-shipped-stamp-icon-sketch-graphic-vector-png-image_11488818.png" alt="order in progress" />
+                          {
+                            purchasedProduct?.status == 'sold' ?
+                             <img width={'100px'} height={'100px '} src="https://uxwing.com/wp-content/themes/uxwing/download/e-commerce-currency-shopping/order-placed-purchased-icon.svg" alt="purchased" />
+                            :
+                            <p className="text-red font-bold text-xl">{purchasedProduct?.status}</p>
+
+                          }
+                         
 
                            
-                          
+                        
                          
                        </div>
 
@@ -144,8 +192,15 @@ Browse adorable outfits, special deals, and new arrivals curated with love for y
                     {/*  product image */}
                     <div className="px-4 mt-4 md:mt-0">
                       <img className='w-full' src={purchasedProduct?.uploadImg?.length>0?`${SERVERURL}/uploads/${purchasedProduct?.uploadImg[0]}`:"https://psdstamps.com/wp-content/uploads/2022/04/round-sold-stamp-png.png"} alt="user purchased product" />
-                        
-                        <button className="bg-blue-900 text-white p-3 my-3 float-end text-xl">Cancel</button>
+                        {/* Cancel Button and Return button only if status is delivered or shiiped */}
+                       <div className='flex'>
+                         
+                         { RetButton &&
+                           <button onClick={()=>ReturnAproduct(purchasedProduct)}  className="bg-red-600 text-white p-3 my-3 float-end text-xl me-2 rounded" >Return</button>
+                         }
+                          
+                          
+                       </div>
 
                     </div>
           
@@ -156,7 +211,7 @@ Browse adorable outfits, special deals, and new arrivals curated with love for y
                   </div>
 
                </div>
-            </div>))
+            </div>)})
             :
             <div className="text-center">
               <p className="text-center text-dark-800 text-2xl font-bold">No purchase yet? Start Purchasing From Today!</p>
@@ -168,6 +223,23 @@ Browse adorable outfits, special deals, and new arrivals curated with love for y
   </div>
           
     <Footer/>
+
+    {/*Toast for alert*/}
+        <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+        
+        />
+
+
     </>
   )
 }

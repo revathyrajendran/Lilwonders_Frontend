@@ -6,7 +6,7 @@ import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
 import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useEffect } from 'react'
-import { getAllProductsInHomePageApi } from '../../Services/allApis'
+import { getAllProductsInHomePageApi, getAllReviewsInHomePageApi } from '../../Services/allApis'
 import { searchProductContext } from '../../../Context/ContextShare'
 import SERVERURL from '../../Services/ServerURL'
 import { useContext } from 'react'
@@ -17,17 +17,22 @@ const Home = () => {
   //state to hold products in Home page
   const[homeProducts,setHomeProducts] = useState([])
 
+  //state to hold reviews in Home page
+  const[homeReviews,setHomeReviews] = useState([])
+
   //For Navigation
   const navigate = useNavigate()
 
   //{searchkey,setSearchKey} and searchBookContext are defined as an object in ContextShare.jsx to search products , same as is used in All Products Page.
   const {searchKey,setSearchKey} = useContext(searchProductContext)
 
-  
+   console.log(homeReviews);
+   
 
   //to load recent 4 books uploaded by users as a side effect 
   useEffect(()=>{
      getHomeProducts()
+     getHomeReviews()
   },[])
 
   //Function for searhing Products
@@ -61,6 +66,22 @@ const Home = () => {
       
     }
   }
+
+    //Function to display Products in Home page
+  const getHomeReviews = async()=>{
+    try{
+      const result = await getAllReviewsInHomePageApi()
+      if(result.status == 200){
+        setHomeReviews(result.data)
+      }
+
+    }catch(err){
+      console.log(err);
+      
+    }
+  }
+
+
   return (
     <>
     <Header/>
@@ -140,46 +161,29 @@ const Home = () => {
         
         {/*Reviews*/}
         <section className='md:px-40 p-5 flex flex-col text-center'>
-           <h1 className=" text-2xl  font-bold">Client Reviews</h1>
+           <h1 className=" text-3xl  font-bold"> Our Customer Reviews....</h1>
             
   
              <div className="my-5 flex flex-col justify-center items-center ">
               
-              <div className="shadow ">
-                <h2>Afsal AJ</h2>
-           <div className='flex  '>
-                 <p>Awesome</p>
-                 <h2 className='ms-3'>4⭐</h2>
-           </div>
-              </div>
+              {
+                homeReviews?.length>0?
+                   homeReviews?.map((review,index)=>(
+                  <div key={index}  className="shadow mb-3 p-2 text-dark ">
+                     <h2 className=" font-medium ">{review?.customername}</h2>
+                      <div className='flex  '>
+                     <p className='  text-xl font-bold'>{review?.rating}</p>
+                   <h2 className='ms-3 font-bold text-xl'>{review?.stars}⭐</h2>
+                    </div>
+                 </div>
+                   ))
+                   :
+                    <p className="text-xl font-bold text-center">No Reviews Yet!</p>
+              }
+             
               <br />
   
-              <div className="shadow">
-                <h2>Arjun Kamal</h2>
-           <div className='flex '>
-                 <p>Good Quality products, Loved it!</p>
-                 <h2 className='ms-3'>3.5⭐</h2>
-           </div>
-              </div>
-              <br />
-  
-              <div className="shadow">
-                <h2>Viswak Sen</h2>
-           <div className='flex '>
-                 <p>Best Designs!</p>
-                 <h2 className='ms-3'>4.5⭐</h2>
-           </div>
-              </div>
-              <br />
-  
-              <div className="shadow">
-                <h2>Catherine elza</h2>
-           <div className='flex '>
-                 <p>Simple and elegant </p>
-                 <h2 className='ms-3'>5⭐</h2>
-           </div>
-              </div>
-              <br />
+             
   
              </div>
   

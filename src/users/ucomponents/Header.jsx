@@ -8,12 +8,12 @@ import { faBars, faPowerOff } from '@fortawesome/free-solid-svg-icons';
 import { width } from '@fortawesome/free-solid-svg-icons/faUser';
 import { userProfileDetailsUpdateContext } from '../../../Context/ContextShare'
 import SERVERURL from '../../Services/ServerURL'
-
-
-
+import { userAuthContext } from '../../../Context/AuthContext';
 
 
 const Header = () => {
+   //role and authorized state from context API, used in app.jsx,Auth.jsx  also
+    const{role,authorizedUser,setAuthorizedUser}=useContext(userAuthContext)
   const [liststatus,setListStatus]=useState(false)
   //state for profile icon instead of login button , token is a string
   const [token,setToken] = useState("")
@@ -44,6 +44,8 @@ const Header = () => {
   //logout
   const logout = ()=>{
     sessionStorage.clear()
+     //context 
+    setAuthorizedUser(false)
     setToken("")
     setUserDp("")
     setDropDown(false)

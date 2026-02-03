@@ -29,6 +29,8 @@ const Resourceadmin = () => {
   const[productsForAdmin,setProductsForAdmin]= useState([])
 
   console.log(userList);
+  console.log(productsForAdmin);
+  
   
 
 
@@ -249,7 +251,7 @@ const goToNextPage = () =>{
                    <h1 className="text-center text-3xl font-bold">
                       All  Collections
                    </h1> 
-                   {/*two tabs */}
+                   {/*three tabs */}
                     <div className="flex justify-center items-center my-5 font-medium text-lg">
                       <p onClick={()=>{setAddProductStatus(true);setProductListStatus(false); setUsersListStatus(false); }} className={addproductstatus ? 'text-blue-500 p-4 border-1 border-gray-200 border-t border-1 border-r rounded cursor-pointer':'p-4 border-b border-gray-400 cursor-pointer'} >Add  Products</p>
                       <p onClick={()=>{setProductListStatus(true);setAddProductStatus(false); setUsersListStatus(false);  }} className={productliststatus ? 'text-blue-500 p-4 border-1 border-gray-200 border-t border-1 border-r rounded cursor-pointer':'p-4 border-b border-gray-400 cursor-pointer'} > All Products</p>
@@ -402,7 +404,11 @@ const goToNextPage = () =>{
                     <p className="text-blue-700 font-bold text-lg">{product?.name}</p>
                     <p>$ {product?.discountPrice}</p>
                   </div>
-                  <button className="text-center text-white bg-green-700 w-full p-3 text-lg font-bold">Delivered</button>
+                  {/* if product status based icons */}
+                   <div >
+                    
+                  </div>
+
                       </div>
                       
                        ))

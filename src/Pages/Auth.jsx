@@ -1,7 +1,7 @@
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons'
 import { faUser } from '@fortawesome/free-solid-svg-icons/faUser'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React from 'react'
+import React, { useContext } from 'react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ToastContainer,toast} from 'react-toastify'
@@ -9,10 +9,15 @@ import { googleLoginApi, loginApi, registerApi } from '../Services/allApis'
 import { GoogleLogin , GoogleOAuthProvider} from '@react-oauth/google';  
 //import jwtdecode
 import { jwtDecode } from "jwt-decode"
+import { userAuthContext } from '../../Context/AuthContext'
 
 
 //if register is true , {register} from App.jsx
 const Auth = ({register}) => {
+
+   //role and authorized state from context API, used in app.jsx also
+  const{role,authorizedUser,setAuthorizedUser}=useContext(userAuthContext)
+
   //navigate
   const navigate = useNavigate();
     
@@ -77,7 +82,8 @@ const handlelogin= async()=>{
         sessionStorage.setItem("user",JSON.stringify(result.data.user))
         //Also store token , token is already string , there no need for stringify
         sessionStorage.setItem("token",result.data.token)
-
+         //context state
+        setAuthorizedUser(true)
         //user and admin redirection, only after 2.5 secons
         setTimeout(() => {
           if(result.data.user.roles=="admin"){

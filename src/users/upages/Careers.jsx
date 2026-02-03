@@ -4,13 +4,17 @@ import Footer from '../../Components/Footer'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowUpRightFromSquare, faXmark } from '@fortawesome/free-solid-svg-icons'
 import { faLocationDot } from '@fortawesome/free-solid-svg-icons/faLocationDot'
-import { seeAllJobsApi } from '../../Services/allApis'
+import { seeAllJobsApi, userApplyJobApi } from '../../Services/allApis'
 import { ToastContainer,toast} from 'react-toastify'
+import { useNavigate } from 'react-router-dom'
+
 
 
 
 
 const Careers = () => {
+  //navigation hook
+  const navigate = useNavigate()
  
   
   //Application Form Status for applying to job
@@ -33,12 +37,77 @@ const Careers = () => {
   //state to hold resume file,Date.now() to make it unique
   const[fileKey,setFileKey]=useState(Date.now())
   
+  //states to store  Job id and Job title to store details of job we apply
+  const[JobTitle,setJobTitle]=useState("")
+  const[JobId,setJobId]=useState("")
   
 
   //useffect to fetch data soon as the page is opened
   useEffect(()=>{
     seeAllJobsForUsers()
   },[searchKey])
+
+
+   //function to get job details title and id
+  const handleApplyJob=(job)=>{
+    //get job details and keep it in the state
+    setJobId(job._id)
+    setJobTitle(job.title)
+     //after getting job details , open job application form
+    setModalStatus(true)
+
+  }
+
+  //function to submit job application . This function is necessary to identify a particular job
+  const handleSubmitApplication=async()=>{
+     //Details given by users while applying jobs
+     const {fullname,email, qualification,phone,coverletter,resume} = applicationDetails
+     //only logged in users can apply for the job , so token is needed
+     const token = sessionStorage.getItem("token")
+     if(!token){
+      toast.info("Please Login To Apply Jobs!!!")
+      setTimeout(() => {
+        navigate('/login')
+      }, 2000);
+     }else if(!fullname|| !email|| !qualification|| !phone|| !coverletter|| !resume || !JobTitle || !JobId){
+      toast.info("Please fill the form completely!!")
+     }else{
+      //if we got every required details from application form , then
+       const reqHeader={
+        "Authorization" : `Bearer ${token}`
+      }
+      //FormData() because pdf is uploaded by user while applying for jobs.
+      const reqBody = new FormData()
+      for(let key in applicationDetails){
+        reqBody.append(key,applicationDetails[key])
+      }
+      //JobTitle and JobId comes from state
+      reqBody.append("JobTitle",JobTitle)
+      reqBody.append("JobId",JobId)
+      //API call
+      const result = await  userApplyJobApi(reqBody,reqHeader)
+      if(result.status == 200){
+        toast.success("Application Submitted Successfully!!")
+        //reset form values
+        handleReset()
+        //close application form modal
+        setModalStatus(false)
+      }else if(result.status == 409){
+        //if application was already submitted, conflict!
+        toast.warning(result.response.data)
+        //reset form values
+        handleReset()
+      }
+      else {
+        //500 , internal server error
+        toast.error("Something Went Wrong!!!")
+        //reset form values
+        handleReset()
+        //close application form modal
+        setModalStatus(false)
+      }
+     }
+  }
 
   //function to reset form
   const handleReset=()=>{
@@ -49,7 +118,6 @@ const Careers = () => {
       setFileKey(Date.now())
       
   }
-
 
   //function to see all jobs 
   const seeAllJobsForUsers=async()=>{
@@ -100,7 +168,7 @@ const Careers = () => {
                           <h1 className="text-xl">{job?.title}</h1>
                           <hr />
                     </div>
-                     <button onClick={()=>setModalStatus(true)} className="bg-green-900 text-white ms-5 p-2 flex items-center">Apply <FontAwesomeIcon className='ms-1' icon={faArrowUpRightFromSquare} /></button>
+                     <button onClick={()=>handleApplyJob(job)} className="bg-green-900 text-white ms-5 p-2 flex items-center">Apply <FontAwesomeIcon className='ms-1' icon={faArrowUpRightFromSquare} /></button>
                  </div>
                  {/*Job description */}
                  <p className='text-lg my-2'> <FontAwesomeIcon  icon={faLocationDot} />{job?.location}</p>
@@ -166,9 +234,9 @@ const Careers = () => {
                                {/*Modal footer */}
                                 
                                 <div className="bg-gray-200 p-3  w-full flex justify-end">
-                                  <button className="bg-gray-700 text-white py-2 px-3 mx-3">Reset</button>
+                                  <button onClick={handleReset} className="bg-gray-700 text-white py-2 px-3 mx-3">Reset</button>
   
-                                  <button className="bg-blue-600 text-white py-2 px-3 mx-3">Submit</button>
+                                  <button onClick={handleSubmitApplication} className="bg-blue-600 text-white py-2 px-3 mx-3">Submit</button>
                                      
                                 </div>
                               
