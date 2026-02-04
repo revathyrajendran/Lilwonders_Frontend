@@ -66,8 +66,8 @@ export const googleLoginApi=async(reqBody)=>{
         return await commonApi("GET",`${SERVERURL}/admin-allorders`,{},reqHeader)
     }
     //get all returned orders for admin
-    export const getReturnedProductsForAdminApi = async (reqHeader) => {
-      return await commonApi( "GET", `${SERVERURL}/admin-returnedorders`,{},reqHeader)
+    export const getReturnedAndCancelledProductsForAdminApi = async (reqHeader) => {
+      return await commonApi( "GET", `${SERVERURL}/admin-returnedandcancelledorders`,{},reqHeader)
       }
     
     //---------users---------------------
@@ -104,8 +104,12 @@ export const googleLoginApi=async(reqBody)=>{
         return await commonApi("POST",`${SERVERURL}/make-payment`,reqBody,reqHeader)
         }
         //Return product -- user , called by ViewAProduct component when user clicks buy
-        export const ReturnProductByUserApi=async(reqBody,reqHeader)=>{
-        return await commonApi("POST",`${SERVERURL}/user-return/product`,reqBody,reqHeader)
+        export const ReturnProductByUserApi=async(orderID,reqHeader)=>{
+        return await commonApi("POST",`${SERVERURL}/user-return/${orderID}`,{},reqHeader)
+        }
+        //Return product -- user , called by ViewAProduct component when user clicks buy
+        export const CancelProductByUserApi=async(orderID,reqHeader)=>{
+        return await commonApi("POST",`${SERVERURL}/user-cancel/${orderID}`,{},reqHeader)
         }
         //review product -- user , called by paymentSuccess component when user clicks review
         export const reviewAProductByUserApi=async(reqBody,reqHeader)=>{

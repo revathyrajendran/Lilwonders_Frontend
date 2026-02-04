@@ -5,7 +5,8 @@ import Adminheader from '../../admin/acomponents/Adminheader'
 import Adminsidebar from '../acomponents/Adminsidebar'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBackward,  faForward } from '@fortawesome/free-solid-svg-icons'
-import { getAllOrdersForAdminApi, getReturnedProductsForAdminApi } from '../../Services/allApis'
+import { getAllOrdersForAdminApi, getReturnedAndCancelledProductsForAdminApi } from '../../Services/allApis'
+import SERVERURL from '../../Services/ServerURL'
 
 function Orderadmin() {
     //token of the logged in admin
@@ -38,16 +39,22 @@ function Orderadmin() {
         )
         //Calculating Total Orders, If user  makes more orders,React automatically recalculates total pages.No manual change needed.
         const totalPages = Math.ceil(orderList.length / ordersPerPage)
-    //useffect to get orders
+
+      console.log(returnOrderList);
+      
+
+    //useffect to get orders: returnListStatus is added as an dependecy so that usereffect runs again to fetch returnd orders
     useEffect(()=>{
-      const token = sessionStorage.getItem('token')
-      setToken(token)
+      const storedToken = sessionStorage.getItem('token')
+        if(storedToken){
+        setToken(storedToken)
+         }
       if(orderListStatus == true){
         getAllOrders(token)
       }else if(returnListStatus == true){
         getAllReturnedOrders(token)
       }
-    },[])
+    },[orderListStatus,returnListStatus])
 
     //function to fetch orders
     const getAllOrders = async(token)=>{
@@ -73,7 +80,7 @@ function Orderadmin() {
       "Authorization" : `Bearer ${token}`
     }
     try{
-          const result = await getReturnedProductsForAdminApi(reqHeader)
+          const result = await getReturnedAndCancelledProductsForAdminApi(reqHeader)
           if(result.status==200){
             setReturnOrderList(result.data)
           }else{
@@ -113,12 +120,12 @@ const goToNextPage = () =>{
                  <div className="col-span-4 ">
                        <div className="p-10">
                         <h1 className="text-center text-3xl font-bold">
-                               Orders And Returns
+                               Orders,Returns And Cancels
                        </h1> 
                        {/*two tabs */}
                         <div className='flex justify-center items-center my-5 font-medium text-lg'>
                             <p onClick={()=>{setOrderListStatus(true);setReturnListStatus(false)}} className={orderListStatus? 'text-blue-500 p-4 border-1 border-gray-200 border-t border-1 border-r rounded cursor-pointer':'p-4 border-b border-gray-400 cursor-pointer'} >Orders</p>
-                          <p onClick={()=>{setReturnListStatus(true);setOrderListStatus(false)}} className={returnListStatus? 'text-blue-500 p-4 border-1 border-gray-200 border-t border-1 border-r rounded cursor-pointer':'p-4 border-b border-gray-400 cursor-pointer'} > Returns</p>
+                          <p onClick={()=>{setReturnListStatus(true);setOrderListStatus(false)}} className={returnListStatus? 'text-blue-500 p-4 border-1 border-gray-200 border-t border-1 border-r rounded cursor-pointer':'p-4 border-b border-gray-400 cursor-pointer'} > Returns And Cancels</p>
                         </div>
                         {/*Contents */}
                          {/*Admins to see orders based on orderListStatus*/}
@@ -131,7 +138,10 @@ const goToNextPage = () =>{
                             
                            {
                                     currentOrders?.length>0?
-                                       currentOrders?.map((order,index)=>(
+                                       currentOrders?.map((order,index)=>{
+                                        const deliveryButton = order?.orderstatus == 'ordered'
+                                        return(
+
                               <div key={index} className="shadow p-3 rounded m-4 bg-gray-200">
 
                          <p className="text-red-700 font-bold text-lg">ID : {order?._id}</p>
@@ -139,19 +149,28 @@ const goToNextPage = () =>{
                 <div className='flex mt-5 items-center'>
                    
                     <div className="flex flex-col  text-lg ml-6">
-                      <p className="text-blue-500  text-lg">{order?.productcode}</p>
+                      <img className='text-center' src={`${SERVERURL}/uploads/${order?.productimg}`} width={'80px'}
+                      height={'80px'} alt="Ordered Product Image" />
+                      <p className="text-blue-700  text-xl font-bold">Product Code : {order?.productcode}</p>
+                      <p className="text-blue-800  ">Product Name : {order?.productname}</p>
+                      <p className="text-green-600 text-2xl  ">Address Details : </p>
                       <p className='text-blue-800'>{order?.customername}</p>
                       <p className='text-blue-800'>{order?.buildingname}</p>
                       <p className='text-blue-800'>{order?.locality}</p>
                       <p className='text-blue-800'>{order?.pincode}</p>
+                      <p className='text-dark'>Contact Details :</p>
                       <p className='text-blue-800'>{order?.phonenumber}</p>
                       <p className='text-blue-800'>{order?.alternatenumber}</p>
                       <p className='text-blue-800'>{order?.Home}</p>
-                      
                       <p>{order?.usermail}</p>
+                      
+                        <p className='text-red-800 text-xl font-bold'>Order Details : {order?.orderstatus}</p>
+                        
                         <div className='justify-between'>
-                              <button className="p-2 mx-3 font-bold text-xl bg-green-600 text-dark my-3">Delivered</button>
-                              <button className="p-2 mx-3 font-bold text-xl  bg-red-500 text-dark my-3">Returned</button>
+                              
+                             { deliveryButton &&
+                              <button className="p-2 mx-3 font-bold text-xl  bg-green-500 text-dark my-3 text-center">Approve Delivery</button>
+                              }
                         </div>
                       
                      </div>
@@ -160,7 +179,7 @@ const goToNextPage = () =>{
                 </div>
                   
 
-                     ))
+                     )})
                      :
                      <p className='text-center text-2xl text-dark'>No Orders!!!!!</p>
                       }
@@ -211,25 +230,47 @@ const goToNextPage = () =>{
                             
                            {
                                     returnOrderList?.length>0?
-                                       returnOrderList?.map((returnedorder,index)=>(
+                                       returnOrderList?.map((returnedorder,index)=>{
+                                        const approveRet = returnedorder?.orderstatus =='Return In Process'
+                                         const approveCan = returnedorder?.orderstatus =='Cancel In Process'
+                                        return(
+                                          
                               <div key={index} className="shadow p-3 rounded m-4 bg-gray-200">
 
-                         <p className="text-red-700 font-bold text-lg">ID : {returnedorder?.name}</p>
+                         <p className="text-red-700 font-bold text-lg"> {returnedorder?.name}</p>
                 
                 <div className='flex mt-5 items-center'>
                    
                     <div className="flex flex-col  text-lg ml-6">
-                      <p className="text-blue-500  text-lg">{returnedorder?.productcode}</p>
-                      <p className='text-blue-800'>{returnedorder?.ageGroup}</p>
-                      <p className='text-blue-800'>{returnedorder?.color}</p>
-                      <p className='text-blue-800'>{returnedorder?.bought}</p>
+                      <img src={`${SERVERURL}/uploads/${returnedorder?.productimg}`} width={'80px'} height={'80px'} alt="returned Product Image " />
+                      <p className="text-blue-500  text-xl font-bold">Product Code : {returnedorder?.productcode}</p>
+                      <p className="text-blue-500  text-lg">Product Name : {returnedorder?.productname}</p>
+                      <p className='text-green-500 text-2xl'>Address Details : </p>
+                      <p className='text-blue-800'>{returnedorder?.customername}</p>
+                      <p className='text-blue-800'>{returnedorder?.buildingname}</p>
+                      <p className='text-blue-800'>{returnedorder?.locality}</p>
+                      <p className='text-blue-800'>{returnedorder?.pincode}</p>
+                       <p className='text-dark'>Contact Details :</p>
+                      <p className='text-blue-800'>{returnedorder?.phonenumber}</p>
+                      <p className='text-blue-800'>{returnedorder?.alternatenumber}</p>
+                      <p className='text-blue-800'>{returnedorder?.addresstype}</p>
+                      <p className='text-dark'>{returnedorder?.usermail}</p>
+                        <p className='text-red-800 font-bold text-xl'>Order Status : {returnedorder?.orderstatus}</p>
                       
                      
                       
                       
-                        <div className='justify-between'>
+                        <div >
                              
-                              <button className="p-2 mx-3 font-bold text-xl  bg-red-500 text-dark my-3">Return Approved</button>
+                              {
+                                approveRet &&
+                                <button className="p-2 mx-3 font-bold text-xl  bg-red-500 text-dark my-3">Approve Return</button>
+                              }
+
+                              {
+                                approveCan &&
+                                <button className="p-2 mx-3 font-bold text-xl  bg-red-500 text-dark my-3">Approve Cancel</button>
+                              }
                         </div>
                       
                      </div>
@@ -238,7 +279,7 @@ const goToNextPage = () =>{
                 </div>
                   
 
-                     ))
+                       )})
                      :
                      <p className='text-center text-2xl text-dark'>No Returns!!!!!</p>
                     }

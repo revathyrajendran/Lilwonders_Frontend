@@ -20,7 +20,7 @@ const ViewAProduct = () => {
 
   //state to hold address details entered by users
   const[addressDetail,setAddressDetail]=useState({
-          customername:"",buildingname:"",locality:"",pincode:"", phonenumber:"",alternatenumber:"",addresstype:"",productcode:""
+          customername:"",buildingname:"",locality:"",pincode:"", phonenumber:"",alternatenumber:"",addresstype:"",productcode:"",productname:"", productprice:"",productimg:""
   })
   
   //To view a single book, we need the id of the particular book : <Route path='product/:id/view' element={<ViewAProduct/>} /> this id value. So destructuring id value . Useparams is used to get dynamic Id.
@@ -184,7 +184,10 @@ const ViewAProduct = () => {
 discountPrice} */}
               <div className="flex justify-end">
                  <Link to={'/all-products'} className="bg-blue-900 text-white p-2 rounded me-3"><FontAwesomeIcon icon={faBackward}/>Back</Link>
-                  <Link  onClick={()=>{setAddressDetail({...addressDetail,productcode:aProductDetail?.productcode});setAddressModalStatus(true)}}  className="bg-green-900 text-white p-2 ms-5 rounded">Buy $ {aProductDetail?.
+                  <Link  onClick={()=>{setAddressDetail({...addressDetail,productcode: aProductDetail?.productcode,
+      productname: aProductDetail?.name,
+      productprice: aProductDetail?.discountPrice,
+      productimg: aProductDetail?.uploadImg?.[0]});setAddressModalStatus(true)}}  className="bg-green-900 text-white p-2 ms-5 rounded">Buy $ {aProductDetail?.
 discountPrice}</Link>
               </div>
 
@@ -254,12 +257,33 @@ discountPrice}</Link>
                               <div className='relative p-5'>
                                 <div className="md:grid grid-cols-2 gap-x-3">
 
+                                 
+                                    {/*Product Details */}
+                                   
                                   <div className="mb-3">
-                                    {
-                                      aProductDetail?.productcode &&
-                                      <input value={ addressDetail.productcode} type="text" className="border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder='Product Code' />
-                                    }
-                                  </div>
+                                         {
+                                          aProductDetail?.uploadImg?.length > 0 &&
+                                              <img width={"70px"} height={"70px"} className="mb-2 rounded"
+                                            src={`${SERVERURL}/uploads/${addressDetail?.productimg}`}
+                                            alt="Product Image"
+                                              />
+                                                }
+                                    </div>
+                                             
+                                             <div className='mb-3'>
+                                               <p className="text-violet-500 text-xl font-bold "> {addressDetail?.productcode}</p>
+                                              </div>
+                                            
+                                           <div className='mb-3'>
+                                             <p className="font-bold">{addressDetail?.productname}</p>
+                                          </div>
+                                           
+                                            <div className='mb-3'>
+                                              <p className="text-violet-500 text-2xl font-bold">₹ {addressDetail?.productprice}</p>
+                                            </div>
+                                 
+                                 
+                                  
 
                                   <div className="mb-3">
                                     <input value={addressDetail.customername} onChange={e=>setAddressDetail({...addressDetail,customername:e.target.value})} type="text" className="border placeholder-gray-600 bg-white p-2 rounded w-full text-black" placeholder=' Full Name' />
@@ -299,7 +323,7 @@ discountPrice}</Link>
                                 <div className="bg-gray-200 p-3  w-full flex justify-end">
                                   <button onClick={handleReset} className="bg-gray-700 text-white py-2 px-3 mx-3">Cancel</button>
   
-                                  <button onClick={handlePlaceOrder} className="bg-blue-600 text-white py-2 px-3 mx-3">Place Holder</button>
+                                  <button onClick={handlePlaceOrder} className="bg-blue-600 text-white py-2 px-3 mx-3">Place Order</button>
                                      
                                 </div>
 

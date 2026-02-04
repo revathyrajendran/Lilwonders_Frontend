@@ -23,6 +23,7 @@ import PaymentError from './users/upages/PaymentError'
 
 import ReturnedOrder from './users/upages/ReturnedOrder'
 import Orderadmin from './admin/apages/Orderadmin'
+import CancelOrder from './users/upages/CancelOrder'
 
 
 
@@ -58,6 +59,7 @@ function App() {
             <Route path='/profile' element={<Profile/>} />
             <Route path='/payment-success' element={<PaymentSuccess/>} />
             <Route path='/payment-error' element={<PaymentError/>} />
+            <Route path='/cancel-order' element={<CancelOrder/>} />
              
               <Route path='/return-order' element={<ReturnedOrder/>} />
          </>

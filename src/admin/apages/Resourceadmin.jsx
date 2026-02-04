@@ -402,7 +402,15 @@ const goToNextPage = () =>{
                   }  />
                   <div className="flex flex-col justify-center align-center">
                     <p className="text-blue-700 font-bold text-lg">{product?.name}</p>
-                    <p>$ {product?.discountPrice}</p>
+                    <p>Selling Price : $ {product?.discountPrice}</p>
+                    {
+                      product?.status == 'sold' ?
+                      <img src="https://static.vecteezy.com/system/resources/previews/021/432/975/large_2x/sold-out-grunge-rubber-stamp-free-png.png" alt="sold" width={'100px'} height={'100px'}/>
+                      :
+                      <p className="text-center text-red-600 font-bold text-xl">{ product?.status}</p>
+                      
+                    }
+
                   </div>
                   {/* if product status based icons */}
                    <div >

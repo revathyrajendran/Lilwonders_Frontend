@@ -10,7 +10,7 @@ import { userProfileDetailsUpdateContext } from '../../../Context/ContextShare'
 
 
 import { useNavigate } from 'react-router-dom'
-import { getAllPurchasedProductsOfAUserApi, ReturnProductByUserApi } from '../../Services/allApis'
+import { CancelProductByUserApi, getAllPurchasedProductsOfAUserApi, ReturnProductByUserApi } from '../../Services/allApis'
 
 
 const Profile = () => {
@@ -81,19 +81,39 @@ const[purchasedProductList,setPurchasedProductList]=useState([])
   
 
   //function to return a product,product here is just a parameter
-  const ReturnAproduct=async(product)=>{
+  const ReturnAproduct=async(orderID)=>{
           if(token){
           const reqHeader={
             "Authorization" : `Bearer ${token}`
             }
-            const reqBody={
-          _id:product._id,name:product.name,productcode:product.productcode,brand:product.brand,ageGroup:product.ageGroup,color:product.color,price:product.price,discountPrice:product.discountPrice,description:product.description,occasion:product.occasion,idealFor:product.idealFor,fabrictype:product.fabrictype,fabricCare:product.fabricCare,uploadImg:product.uploadImg
-        }
+            
         try{
-          const result =  await ReturnProductByUserApi(reqBody,reqHeader)
+          const result =  await ReturnProductByUserApi(orderID,reqHeader)
           if(result.status==200){
             setTimeout(() => {
               navigate('/return-order')
+            }, 1500);
+          getAllPurchasedProductsOfAUser()
+          }
+        }catch(err){
+          console.log(err);
+          
+        }
+        }
+   }
+
+   //function to return a product,product here is just a parameter
+  const CancelAproduct=async(orderID)=>{
+          if(token){
+          const reqHeader={
+            "Authorization" : `Bearer ${token}`
+            }
+           
+        try{
+          const result =  await CancelProductByUserApi(orderID,reqHeader)
+          if(result.status==200){
+            setTimeout(() => {
+              navigate('/cancel-order')
             }, 1500);
           getAllPurchasedProductsOfAUser()
           }
@@ -154,7 +174,11 @@ Browse adorable outfits, special deals, and new arrivals curated with love for y
                 
 
                  const RetButton =
-                 purchasedProduct.status === 'sold' 
+                 purchasedProduct.orderstatus == 'sold' 
+
+                  const CanButton =
+                 purchasedProduct.orderstatus == 'ordered'  
+
                 
                 
             return  ( <div key={index} className="p-10 my-20 shadow">
@@ -164,20 +188,31 @@ Browse adorable outfits, special deals, and new arrivals curated with love for y
                     
                      {/* productstatus */}
                     <div className="px-3">
-                      <h1 className="text-2xl">{purchasedProduct?.name}</h1>
+                      <h1 className="text-2xl">{purchasedProduct?.productname}</h1>
                       
-                       <h3 className="text-lg text-blue-400">$ {purchasedProduct?.discountPrice}</h3>
+                       <h3 className="text-lg text-blue-400">$ {purchasedProduct?.productprice}</h3>
                        
 
                        {/*Product status :  sold  */ }
                        <div className="flex">
                           
                           {
-                            purchasedProduct?.status == 'sold' ?
-                             <img width={'100px'} height={'100px '} src="https://uxwing.com/wp-content/themes/uxwing/download/e-commerce-currency-shopping/order-placed-purchased-icon.svg" alt="purchased" />
+                            purchasedProduct?.orderstatus == 'sold' ?
+                             <img width={'100px'} height={'100px '} src="https://uxwing.com/wp-content/themes/uxwing/download/e-commerce-currency-shopping/order-placed-purchased-icon.svg" alt="sold " />
+                            : 
+                            purchasedProduct?.orderstatus == 'ordered' ?
+                            <img width={'100px'} height={'100px '} src="https://thumbs.dreamstime.com/b/ordered-stamp-white-background-ordered-stamp-white-302877615.jpg" alt="ordered" />
                             :
-                            <p className="text-red font-bold text-xl">{purchasedProduct?.status}</p>
-
+                            purchasedProduct?.orderstatus == 'Return In Process' ?
+                            <p className='text-xl text-red-600 font-bold'>{purchasedProduct?.orderstatus}</p>
+                            :
+                            purchasedProduct?.orderstatus == 'Cancel In Process' ?
+                            <p className='text-xl text-red-600 font-bold'>{purchasedProduct?.orderstatus}</p>
+                            :
+                            purchasedProduct?.orderstatus == 'Returned' ?
+                             <img width={'100px'} height={'100px '} src="https://thumbs.dreamstime.com/b/returned-stamp-17310372.jpg" alt="Returned" />
+                             :
+                             <img width={'100px'} height={'100px '} src="https://static.vecteezy.com/system/resources/previews/021/433/002/non_2x/cancelled-rubber-stamp-free-png.png" alt="Cancelled" />
                           }
                          
 
@@ -191,12 +226,16 @@ Browse adorable outfits, special deals, and new arrivals curated with love for y
                     </div>
                     {/*  product image */}
                     <div className="px-4 mt-4 md:mt-0">
-                      <img className='w-full' src={purchasedProduct?.uploadImg?.length>0?`${SERVERURL}/uploads/${purchasedProduct?.uploadImg[0]}`:"https://psdstamps.com/wp-content/uploads/2022/04/round-sold-stamp-png.png"} alt="user purchased product" />
+                      <img className='w-full' src={`${SERVERURL}/uploads/${purchasedProduct?.productimg}`} alt="user purchased product" />
                         {/* Cancel Button and Return button only if status is delivered or shiiped */}
-                       <div className='flex'>
+                       <div className='m-2'>
                          
                          { RetButton &&
-                           <button onClick={()=>ReturnAproduct(purchasedProduct)}  className="bg-red-600 text-white p-3 my-3 float-end text-xl me-2 rounded" >Return</button>
+                           <button onClick={()=>ReturnAproduct(purchasedProduct._id)}  className="bg-red-600 text-white p-3 my-3 float-end text-xl me-2 rounded" >Return</button>
+                         }
+
+                         { CanButton &&
+                           <button onClick={()=>CancelAproduct(purchasedProduct._id)}  className="bg-red-600 text-white p-3 my-3 float-end text-xl me-2 rounded" >Cancel</button>
                          }
                           
                           

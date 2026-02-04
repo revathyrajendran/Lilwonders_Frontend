@@ -28,7 +28,13 @@ const Allproducts = () => {
   //For pagenation to display only unordered products
 const displayProducts = allProducts.filter(
   product =>
-    product.status !== 'sold' 
+    product.status != 'sold'  &&
+   product.status != 'Return In Process' &&
+   product.status != 'Cancel In Process' &&
+    product.status != 'ordered'  
+
+  
+    
 
 );
 
