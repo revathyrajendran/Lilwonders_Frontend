@@ -69,6 +69,18 @@ export const googleLoginApi=async(reqBody)=>{
     export const getReturnedAndCancelledProductsForAdminApi = async (reqHeader) => {
       return await commonApi( "GET", `${SERVERURL}/admin-returnedandcancelledorders`,{},reqHeader)
       }
+    //Approve return request by Admin
+    export const approveReturnsByAdminApi = async(Idoforder,reqHeader)=>{
+      return await commonApi("POST",`${SERVERURL}/admin-approve-return/${Idoforder}`,{},reqHeader)
+    }
+    //Approve cancel request by Admin
+    export const approveCancelsByAdminApi = async(canelorderID,reqHeader)=>{
+      return await commonApi("POST",`${SERVERURL}/admin-approve-cancel/${canelorderID}`,{},reqHeader)
+    }
+    //Approve delivery as sold by Admin
+    export const approveDeliveryAsSoldByAdminApi = async(soldID,reqHeader)=>{
+      return await commonApi("POST",`${SERVERURL}/admin-approve-sold/${soldID}`,{},reqHeader)
+    }
     
     //---------users---------------------
        //get all products for logged in user when user clicks shop menu in the header,for logged in

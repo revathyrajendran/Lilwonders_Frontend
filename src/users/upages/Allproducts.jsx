@@ -207,7 +207,7 @@ const goToNextPage = () =>{
                     <div className="flex flex-col justify-center align-center">
                       <p className="text-blue-700 font-bold text-lg">{product?.name}</p>
                      
-                      <p><del style={{transform: "translateY(-6px)"}} className='text-red-600'>{product?.price}</del><span className='text-black-500 ms-3'>{product?.discountPrice}</span></p>
+                      <p><del style={{transform: "translateY(-6px)"}} className='text-red-600'>${product?.price}</del><span className='text-black-500 ms-3'>${product?.discountPrice}</span></p>
                     <Link to={`/product/${product?._id}/view`} className='mt-2 text-center  bg-blue-800 text-white p-2 '>View </Link>
                     </div>
                   </div>

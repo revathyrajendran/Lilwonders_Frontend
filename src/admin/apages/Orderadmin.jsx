@@ -5,7 +5,7 @@ import Adminheader from '../../admin/acomponents/Adminheader'
 import Adminsidebar from '../acomponents/Adminsidebar'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBackward,  faForward } from '@fortawesome/free-solid-svg-icons'
-import { getAllOrdersForAdminApi, getReturnedAndCancelledProductsForAdminApi } from '../../Services/allApis'
+import { approveCancelsByAdminApi, approveDeliveryAsSoldByAdminApi, approveReturnsByAdminApi, getAllOrdersForAdminApi, getReturnedAndCancelledProductsForAdminApi } from '../../Services/allApis'
 import SERVERURL from '../../Services/ServerURL'
 
 function Orderadmin() {
@@ -52,7 +52,7 @@ function Orderadmin() {
       if(orderListStatus == true){
         getAllOrders(token)
       }else if(returnListStatus == true){
-        getAllReturnedOrders(token)
+        getAllReturnedAndCancelledOrders(token)
       }
     },[orderListStatus,returnListStatus])
 
@@ -75,7 +75,7 @@ function Orderadmin() {
     }
 
      //function to fetch orders
-    const getAllReturnedOrders = async(token)=>{
+    const getAllReturnedAndCancelledOrders = async(token)=>{
       const reqHeader = {
       "Authorization" : `Bearer ${token}`
     }
@@ -90,6 +90,68 @@ function Orderadmin() {
         }catch(err){
           console.log(err);
         }
+    }
+
+    //function to approve returns
+    const approveReturn = async(Idoforder)=>{
+      if(token){
+        const reqHeader = {
+      "Authorization" : `Bearer ${token}`
+          }
+          try{
+           const result =  await approveReturnsByAdminApi(Idoforder,reqHeader)
+           if(result.status == 200){
+            toast.success("Return  Request Approved Successfully!!!")
+            //load after  return in process becomes  returned
+            getAllReturnedAndCancelledOrders()
+           }
+
+          }catch(err){
+            console.log(err);
+            
+          }
+      }
+    }
+
+     //function to approve cancels
+    const approveCancel = async(canelorderID)=>{
+      if(token){
+        const reqHeader = {
+      "Authorization" : `Bearer ${token}`
+          }
+          try{
+            const result = await approveCancelsByAdminApi(canelorderID,reqHeader)
+            if(result.status == 200){
+              toast.success("Cancel Request Approved Successfully!!!")
+              //load after cancel in process becomes canceleld 
+            getAllReturnedAndCancelledOrders()
+            }
+
+          }catch(err){
+            console.log(err);
+            
+          }
+      }
+    }
+
+
+     //function to approve deliveries
+    const approveSold = async(soldID)=>{
+      if(token){
+        const reqHeader = {
+      "Authorization" : `Bearer ${token}`
+          }
+          try{
+            const result = await approveDeliveryAsSoldByAdminApi(soldID,reqHeader)
+            toast.success("Product Delivered Successfully")
+            //ordered becomes sold, reload again
+            getAllOrders()
+
+          }catch(err){
+            console.log(err);
+            
+          }
+      }
     }
 
     //PAGENATION{
@@ -169,7 +231,7 @@ const goToNextPage = () =>{
                         <div className='justify-between'>
                               
                              { deliveryButton &&
-                              <button className="p-2 mx-3 font-bold text-xl  bg-green-500 text-dark my-3 text-center">Approve Delivery</button>
+                              <button onClick={()=>approveSold(order?._id)} className="p-2 mx-3 font-bold text-xl  bg-green-500 text-dark my-3 text-center">Approve Delivery</button>
                               }
                         </div>
                       
@@ -237,12 +299,13 @@ const goToNextPage = () =>{
                                           
                               <div key={index} className="shadow p-3 rounded m-4 bg-gray-200">
 
-                         <p className="text-red-700 font-bold text-lg"> {returnedorder?.name}</p>
+                         <p className="text-red-700 font-bold text-lg"> {returnedorder?._id}</p>
                 
                 <div className='flex mt-5 items-center'>
                    
                     <div className="flex flex-col  text-lg ml-6">
                       <img src={`${SERVERURL}/uploads/${returnedorder?.productimg}`} width={'80px'} height={'80px'} alt="returned Product Image " />
+                      <p className="text-blue-800  "> {returnedorder?.name}</p>
                       <p className="text-blue-500  text-xl font-bold">Product Code : {returnedorder?.productcode}</p>
                       <p className="text-blue-500  text-lg">Product Name : {returnedorder?.productname}</p>
                       <p className='text-green-500 text-2xl'>Address Details : </p>
@@ -264,12 +327,12 @@ const goToNextPage = () =>{
                              
                               {
                                 approveRet &&
-                                <button className="p-2 mx-3 font-bold text-xl  bg-red-500 text-dark my-3">Approve Return</button>
+                                <button onClick={()=>approveReturn(returnedorder?._id)} className="p-2 mx-3 font-bold text-xl  bg-red-500 text-dark my-3">Approve Return</button>
                               }
 
                               {
                                 approveCan &&
-                                <button className="p-2 mx-3 font-bold text-xl  bg-red-500 text-dark my-3">Approve Cancel</button>
+                                <button onClick={()=>approveCancel(returnedorder?._id)} className="p-2 mx-3 font-bold text-xl  bg-red-500 text-dark my-3">Approve Cancel</button>
                               }
                         </div>
                       
@@ -294,6 +357,22 @@ const goToNextPage = () =>{
             
              </div>
              <Footer/>
+
+
+              {/*Toast for alert*/}
+                     <ToastContainer
+                     position="top-center"
+                     autoClose={5000}
+                     hideProgressBar={false}
+                     newestOnTop={false}
+                     closeOnClick={false}
+                     rtl={false}
+                     pauseOnFocusLoss
+                     draggable
+                     pauseOnHover
+                     theme="colored"
+                     
+                     />
     
     
     </>

@@ -103,7 +103,7 @@ const ViewAProduct = () => {
           //after 2 seconds
           setTimeout(() => {
              handlePayment()
-          }, 2000);
+          }, 1000);
         }
 
        }catch(err){
