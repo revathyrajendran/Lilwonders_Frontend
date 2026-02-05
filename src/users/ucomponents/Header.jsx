@@ -104,13 +104,58 @@ const Header = () => {
     {/*List of items */}
    <nav className='bg-indigo-300 p-3 w-full text-dark text-bold'>
     {/*Menubar & login only for mobike screen */}
-    <div className="flex justify-between items-center text-xl md:hidden">
-      <button onClick={()=>setListStatus(!liststatus)}><FontAwesomeIcon icon={faBars} /></button>
-      {/*Login link */}
-         
-            <Link to={'/login'}><button className='me-2 hover:bg-black hover:text-white px-3 py-2 border border-black ms-2 rounded'> <FontAwesomeIcon icon={faUser }  className='ms-2 ' /> Login</button></Link>
-    </div>
+     <div className="flex justify-between items-center text-xl md:hidden">
+  <button onClick={()=>setListStatus(!liststatus)}>
+    <FontAwesomeIcon icon={faBars} />
+  </button>
 
+  {/* LOGIN / PROFILE (mobile) */}
+  { !token ?
+    (
+      <Link to={'/login'}>
+        <button className='me-2 hover:bg-black hover:text-white px-3 py-2 border border-black ms-2 rounded'>
+          <FontAwesomeIcon icon={faUser} className='ms-2' /> Login
+        </button>
+      </Link>
+    ):
+    (
+      <div className='relative inline-block text-left'>
+        <button onClick={()=>setDropDown(!dropdown)}
+          className='bg-white px-3 py-2 shadow-xs hover:bg-gray-500'>
+          
+          <img
+            width="30px"
+            height="30px"
+            style={{borderRadius:'50%'}}
+            src={
+              userDp=="" 
+              ? "https://static.vecteezy.com/system/resources/thumbnails/005/544/718/small/profile-icon-design-free-vector.jpg"
+              : userDp.startsWith("https://lh3.googleusercontent.com/")
+                ? userDp
+                : `${SERVERURL}/uploads/${userDp}`
+            }
+            alt="userdp"
+          />
+        </button>
+
+        {dropdown && (
+          <div className='absolute right-0 z-10 mt-2 w-56 rounded-md bg-white shadow-lg'>
+            <div className="py-1">
+              <Link className='block py-2 px-4 text-sm text-gray-700' to={'/profile'}>
+                <FontAwesomeIcon icon={faAddressCard} className='me-2' /> Profile
+              </Link>
+
+              <button onClick={logout}
+                className='block py-2 px-4 text-sm text-gray-700'>
+                <FontAwesomeIcon icon={faPowerOff} className='me-2' /> Logout
+              </button>
+            </div>
+            </div>
+        )}
+      </div>
+    )
+  }
+</div>
       <ul className={liststatus?'flex flex-col':'hidden md:flex justify-center items-center '}>
        <li className='mx-4 mt-3 md:mt-0'> <Link to={'/'} >HOME</Link></li>
         <li className='mx-4 mt-3  md:mt-0'><Link to={'/all-products'} >SHOP</Link></li>
