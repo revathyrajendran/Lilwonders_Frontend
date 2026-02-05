@@ -55,7 +55,7 @@ function App() {
           
           { role == "user" &&
          <>
-            <Route path='product/:id/view' element={<ViewAProduct/>} />
+            <Route path='/product/:id/view' element={<ViewAProduct/>} />
             <Route path='/profile' element={<Profile/>} />
             <Route path='/payment-success' element={<PaymentSuccess/>} />
             <Route path='/payment-error' element={<PaymentError/>} />
